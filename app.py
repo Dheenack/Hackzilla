@@ -1,42 +1,55 @@
-# app.py
 import streamlit as st
-import pandas as pd
 
-st.set_page_config(page_title="Hackzilla — Anemia Explorer", layout="wide")
-st.title("Hackzilla — Anemia Dataset Explorer")
+st.title("🩸 Hackzilla — Anemia Test Data Input")
 
-@st.cache_data
-def load_data():
-    # tries CSV first, then xlsx
-    try:
-        return pd.read_csv("anemia.csv")
-    except Exception:
-        return pd.read_excel("Anemia Dataset.xlsx")
+# Custom CSS for enhanced transparency and rounded inputs
+st.markdown("""
+<style>
+    div.stSelectbox > div[data-baseweb="select"] > div {
+        border-radius: 12px !important;
+        background-color: #1e1e2f;
+        color: white;
+    }
+    div.stNumberInput > div > input {
+        border-radius: 10px !important;
+        background-color: #282c48;
+        color: #b4b8ff;
+        font-weight: 600;
+        font-size: 16px;
+        padding: 6px 12px;
+    }
+    div.stButton > button {
+        border-radius: 14px;
+        background: linear-gradient(90deg, #5e5eff, #88aaff);
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+        padding: 10px 20px;
+        margin-top: 8px;
+        box-shadow: 0 0 10px #6677ffaa;
+        transition: all 0.3s ease;
+    }
+    div.stButton > button:hover {
+        background: linear-gradient(90deg, #8a8aff, #bbd1ff);
+        box-shadow: 0 0 15px #99aaffcc;
+    }
+    .stRadio > label {
+        font-size: 16px;
+        color: #aabbee;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-df = load_data()
-st.subheader("Preview")
-st.dataframe(df.head())
+with st.form("anemia_form"):
+    st.markdown("### Please fill all fields with accurate values:")
+    gender = st.radio("Gender", options=["Male", "Female"], horizontal=True)
+    hemoglobin = st.number_input("Hemoglobin (g/dL)", min_value=0.0, max_value=30.0, step=0.1, format="%.1f")
+    mch = st.number_input("MCH (pg)", min_value=0.0, max_value=40.0, step=0.1, format="%.1f")
+    mchc = st.number_input("MCHC (g/dL)", min_value=0.0, max_value=40.0, step=0.1, format="%.1f")
+    mcv = st.number_input("MCV (fL)", min_value=0.0, max_value=130.0, step=0.1, format="%.1f")
+    submitted = st.form_submit_button("Analyze Data")
 
-st.subheader("Basic stats")
-st.write(df.describe(include="all"))
-
-# let user pick a numeric column to plot (safely handle missing)
-num_cols = df.select_dtypes(include=["number"]).columns.tolist()
-if num_cols:
-    col = st.selectbox("Choose numeric column to plot", num_cols)
-    st.line_chart(df[col].dropna().reset_index(drop=True))
-else:
-    st.info("No numeric columns found to plot.")
-
-# file upload (optional)
-st.sidebar.header("Upload your own file (optional)")
-uploaded = st.sidebar.file_uploader("CSV or XLSX", type=['csv','xlsx'])
-if uploaded is not None:
-    try:
-        if uploaded.name.endswith(".csv"):
-            df2 = pd.read_csv(uploaded)
-        else:
-            df2 = pd.read_excel(uploaded)
-        st.sidebar.write(df2.head())
-    except Exception as e:
-        st.sidebar.error(f"Failed to read uploaded file: {e}")
+    if submitted:
+        st.success(f"Submitted data: Gender={gender}, Hemoglobin={hemoglobin}, MCH={mch}, MCHC={mchc}, MCV={mcv}")
